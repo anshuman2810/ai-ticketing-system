@@ -38,7 +38,9 @@ export const onTicketCreate = inngest.createFunction(
                 return skills;
             })
 
-            
+            const moderator = await step.run("assign-moderator", async() => {
+            // 02:07:00   
+            })
 
         } catch (error) {
             
