@@ -39,9 +39,35 @@ export const onTicketCreate = inngest.createFunction(
             })
 
             const moderator = await step.run("assign-moderator", async() => {
-            // 02:07:00   
+                let user = await User.findOne({
+                    role: "moderator",
+                    skills: {
+                        $elemMatch:{
+                            $regex: relatedSkills.join("|"),
+                            $options: "i"
+                        },
+                    },
+                });
+                if (!user){
+                    user = await User.findOne({
+                        role: "admin"
+                    });
+                }
+                await Ticket.findByIdAndUpdate(ticket._id, {
+                    assignedTo: user?._id || null
+                })
+                return user;
+            });
+            await step.run("send-email-notification", async() => {
+                if(moderator){
+                    const finalTicket = await Ticket.findById(ticket._id)
+                    await sendMail(
+                        moderator.email,
+                        "New Ticket Assigned",
+                        `A new ticket has been assigned to you. ${finalTicket.title}` //2:15:15
+                    )
+                }
             })
-
         } catch (error) {
             
         }
