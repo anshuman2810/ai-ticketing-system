@@ -6,7 +6,7 @@ import {analyzeTicket} from "../../utils/ai.js"
 
 export const onTicketCreate = inngest.createFunction(
     { id: "on-ticket-created", retries:2 },
-    { event: "ticker/created" },
+    { event: "ticket/created" },
 
     async ({event,step}) =>{
         try {
@@ -64,12 +64,15 @@ export const onTicketCreate = inngest.createFunction(
                     await sendMail(
                         moderator.email,
                         "New Ticket Assigned",
-                        `A new ticket has been assigned to you. ${finalTicket.title}` //2:15:15
+                        `A new ticket has been assigned to you. ${finalTicket.title}` 
                     )
                 }
             })
+
+            return {success : true};
         } catch (error) {
-            
+            console.error("❌Error in running the step:", error.message);
+            return {success:false}
         }
     }
 )
