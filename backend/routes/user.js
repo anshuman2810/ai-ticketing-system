@@ -11,7 +11,7 @@ router.post("/login", login)
 router.post("/logout", logout)
 
 router.get("/users",authenticate ,getUsers)
-router.post("/update-user", authenticate,updateUser)
+router.put("/update-user", authenticate,updateUser)
 
 
 
