@@ -3,6 +3,7 @@ import Ticket from "../../models/ticket.js";
 import { NonRetriableError } from "inngest";
 import {sendMail} from "../../utils/mailer.js"
 import {analyzeTicket} from "../../utils/ai.js"
+import User from "../../models/user.js";
 
 export const onTicketCreated = inngest.createFunction(
     { id: "on-ticket-created", retries:2 },
@@ -12,7 +13,7 @@ export const onTicketCreated = inngest.createFunction(
         try {
             const {ticketId} = event.data;
             const ticket = await step.run("fetch-ticket", async() => {
-                const ticketObject = await User.findOne({ticketId});
+                const ticketObject = await Ticket.findById(ticketId);
                 if(!ticketObject){
                     throw new NonRetriableError("Ticket not found");
                 }

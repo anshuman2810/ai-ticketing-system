@@ -4,10 +4,10 @@ import user from "./user.js"
 const tickerSchema = new mongoose.Schema({
     title : {type : String},
     description : {type : String},
-    status : {type : String, defaule : "TODO"},
+    status : {type : String, default : "TODO"},
     createdBy : {type : mongoose.Schema.Types.ObjectId, ref : "User"},
     assignedTo : {type : mongoose.Schema.Types.ObjectId, ref : "User", default : null},
-    priotity : {type : String},
+    priority : {type : String},
     deadline : {type : Date},
     helpfulNotes : {type : String},
     relatedSkills : {type : [String]},

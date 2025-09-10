@@ -48,13 +48,28 @@ export const analyzeTicket = async (ticket) => {
     
     - Title: ${ticket.title}
     - Description: ${ticket.description}`);
+    // console.log("Full AI response:", response);
     
-    const raw = response.output[0].context;
+    const raw = response.output?.[0]?.content;
+    const text = raw?.parts?.[0]?.text || raw;
+    // if (!raw) {
+    //     console.error("AI response is empty or undefined");
+    //     return null;
+    // }
+    if (!text) {
+        console.error("AI response is empty or undefined");
+        return null;
+      }
 
     try {
-        const match = raw.match(/```json\s*([\s\S]*?)\s*```/i);
-        const jsonString = match ? match[1] : raw.trim();
-        return JSON.parse(jsonString);  
+        // const match = raw.match(/```json\s*([\s\S]*?)\s*```/i);
+        // const jsonString = match ? match[1] : raw.trim();
+        // return JSON.parse(jsonString);
+        // return JSON.parse(raw.trim());  
+        const match = text.match(/```json\s*([\s\S]*?)\s*```/i);
+        const jsonString = match ? match[1] : text.trim();
+        const result = JSON.parse(jsonString);
+        return result;
     } catch (e) {
         console.error ("Failed to parse json from ai response: ", e.message);
         return null;
