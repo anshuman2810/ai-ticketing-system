@@ -1,5 +1,5 @@
 import mongoose from "mongoose"
-import user from "./user"
+import user from "./user.js"
 
 const tickerSchema = new mongoose.Schema({
     title : {type : String},

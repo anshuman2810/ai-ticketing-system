@@ -6,7 +6,7 @@ import {inngest} from "../inngest/client.js"
 export const signup = async (req,res) => {
     const {email,password,skills = []} = req.body
     try {
-        const hashedpassword = bcrypt.hash(password,10)
+        const hashedpassword = await bcrypt.hash(password,10)
         const user = await User.create({email, password : hashedpassword, skills})
 
         await inngest.send ({
@@ -17,12 +17,15 @@ export const signup = async (req,res) => {
 
         });
 
-        token = jwt.sign(
+        const token = jwt.sign(
             { _id:user._id, role : user.role, },
             process.env.JWT_SECRET
         );
         res.json ({user, token})
     } catch (error) {
+        if (error.code === 11000) {
+            return res.status(400).json({ error: "Signup failed", details: "Email already registered" });
+          }
         res.status(500).json({error: "Signup failed", details : error.message});      
     }
 }
@@ -31,13 +34,13 @@ export const login = async (req,res) => {
     const {email,password} = req.body
 
     try {
-        const user = User.findOne({email})
+        const user = await User.findOne({email})
         if(!user) return res.status(404).json({error: "User not found!"})
-        const isMatch = bcrypt.compare(password,user.password);
+        const isMatch = await bcrypt.compare(password,user.password);
         if(!isMatch){
             return res.status(401).json({error : "Invalid ID or password!"})
         }
-        token = jwt.sign(
+        const token = jwt.sign(
             { _id:user._id, role : user.role, },
             process.env.JWT_SECRET
         );

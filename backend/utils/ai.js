@@ -1,7 +1,7 @@
 import {createAgent, gemini} from "@inngest/agent-kit";
-import { l } from "@inngest/agent-kit/dist/agent-Df6e3z3X";
 
-const analyzeTicket = async (ticket) => {
+
+export const analyzeTicket = async (ticket) => {
     const supportAgent = createAgent({
         model: gemini({
             model: "gemini-2.0-flash",
