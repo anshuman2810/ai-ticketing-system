@@ -43,9 +43,39 @@ export const getTickets = async (req,res) =>{
             .sort({createdAt: -1});
         }
         else{
-            await Ticket.find({createdBy: user._id})
+            tickets = await Ticket.find({createdBy: user._id})
+                .select("title description status createdAt")
+                .sort({createdAt: -1});
         }
+
+        return res.status(200).json(tickets);
     } catch (error) {
-        
+        console.error("Error in fetching tickets: ",error.message);
+        return res.status(500).json({message: "Internal server error"});
+    }
+}
+
+export const getTicket = async (req,res) =>{
+    try {
+        const user = req.user;
+        let ticket;
+        if(user.role !== "user")
+        {
+            ticket = Ticket.findById(req.params.id)
+            .populate("assignedTo", ["email", "_id"])
+        }
+        else{
+            ticket = Ticket.findOne({
+                createdBy: user._id,
+                _id: req.params.id,
+            }).select("title description status createdAt");
+        }
+        if(!ticket){
+            return res.status(404).json({message: "Ticket not found"});
+        }
+        return res.status(200).json({ticket});
+    } catch (error) {
+        console.error("Error in fetching ticket: ",error.message);
+        return res.status(500).json({message: "Internal server error"});
     }
 }
