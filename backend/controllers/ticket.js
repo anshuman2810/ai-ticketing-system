@@ -69,25 +69,23 @@ export const getTicket = async (req,res) =>{
         const ticketId = req.params.id;
         let query = { _id: ticketId }; 
         
-        // This variable will hold fields we explicitly want to EXCLUDE (hide)
+
         let projection = {}; 
 
-        // 1. Apply Authorization Filter
         if (user.role === "moderator") {
             query.assignedTo = user._id;
         } 
         else if (user.role === "user") {
-            // Regular users can only fetch a ticket if they created it
+
             query.createdBy = user._id;
-            
-            // ✅ CHANGE: Hide helpfulNotes for regular users
+
             projection = { helpfulNotes: 0, relatedSkills: 0 }; 
         }
         
-        // Admins (user.role === "admin") pass through with no restrictions or hidden fields.
+
 
         const ticket = await Ticket.findOne(query)
-            .select(projection) // ⬅️ APPLY THE PROJECTION HERE
+            .select(projection) 
             .populate("assignedTo", ["email", "_id"])
             .populate("createdBy", ["email", "_id"]) 
             .populate("replies.sentBy", ["email", "_id"]); 
@@ -119,7 +117,7 @@ export const replyToTicket = async (req, res) => {
             return res.status(404).json({ message: "Ticket not found." });
         }
 
-        // Authorization Check: Admin, Assigned Mod, or Creator can reply.
+
         const isAssigned = ticket.assignedTo && ticket.assignedTo._id.equals(userId);
         const isAdmin = userRole === 'admin';
         const isCreator = ticket.createdBy.equals(userId);
@@ -128,7 +126,7 @@ export const replyToTicket = async (req, res) => {
             return res.status(403).json({ message: "Forbidden: You are not authorized to reply to this ticket." });
         }
         
-        // Construct the new reply object
+
         const newReply = {
             text: replyText,
             sentBy: userId,
@@ -137,12 +135,12 @@ export const replyToTicket = async (req, res) => {
         ticket.replies.push(newReply);
         await ticket.save();
 
-        // Return the reply with the current user's email for immediate FE update
+
         return res.status(200).json({ 
             message: "Reply sent successfully.",
             reply: { 
                 ...newReply, 
-                // Explicitly send the populated sentBy object
+
                 sentBy: { _id: userId, email: req.user.email } 
             } 
         });
@@ -155,18 +153,17 @@ export const replyToTicket = async (req, res) => {
 
 export const closeTicket = async (req, res) => {
     try {
-        const { id } = req.params; // Ticket ID from the URL
+        const { id } = req.params; 
         const userId = req.user._id;
         const userRole = req.user.role;
 
-        // 1. Fetch the ticket to check assignment
+
         const ticket = await Ticket.findById(id).select('assignedTo createdBy status');
 
         if (!ticket) {
             return res.status(404).json({ message: "Ticket not found." });
         }
 
-        // 2. Authorization Check
         const isAssigned = ticket.assignedTo && ticket.assignedTo.equals(userId);
         const isAdmin = userRole === 'admin';
 
@@ -174,23 +171,22 @@ export const closeTicket = async (req, res) => {
             return res.status(403).json({ message: "Forbidden: Only the Admin or assigned Moderator can close this ticket." });
         }
 
-        // 3. Prevent closing if already closed
         if (ticket.status === 'CLOSED') {
             return res.status(400).json({ message: "Ticket is already closed." });
         }
 
-        // 4. Update the status
+
         const result = await Ticket.updateOne(
             { _id: id },
             { $set: { status: 'CLOSED' } }
         );
 
         if (result.modifiedCount === 0) {
-            // This is unlikely given the checks, but good for safety
+
             return res.status(400).json({ message: "Ticket status not changed." });
         }
         
-        // 5. Success response
+
         return res.status(200).json({ 
             message: "Ticket successfully closed.",
             newStatus: 'CLOSED'
