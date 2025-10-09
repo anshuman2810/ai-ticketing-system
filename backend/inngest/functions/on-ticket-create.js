@@ -43,13 +43,14 @@ export const onTicketCreated = inngest.createFunction(
                 let user = await User.findOne({
                     role: "moderator",
                     skills: {
-                        $elemMatch:{
+                        
                             $regex: relatedSkills.join("|"),
                             $options: "i"
-                        },
+                        
                     },
                 });
                 if (!user){
+                    console.log("No matching moderator found, assigning to admin");
                     user = await User.findOne({
                         role: "admin"
                     });

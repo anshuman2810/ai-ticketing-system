@@ -69,12 +69,12 @@ export const logout = async (req,res) => {
 }
 
 export const updateUser = async(req,res) => {
-    const {skills = [], role, email} = req.body
+    const {skills, role, email} = req.body
     try {
         if(req.user?.role !== "admin"){
             return res.status(403).json({error: "Forbidden : You are not authorized to update user details!"});
         }
-        const user = User.findOne({email})
+        const user = await User.findOne({email})
         if(!user){
             return res.status(404).json({error: "User not found!"});
         }

@@ -36,7 +36,7 @@ export default function AdminPanel() {
     setEditingUser(user.email);
     setFormData({
       role: user.role,
-      skills: user.skills?.join(", "),
+      skills: typeof user.skills === 'string' ? user.skills : "",
     });
   };
 
@@ -45,7 +45,7 @@ export default function AdminPanel() {
       const res = await fetch(
         `${import.meta.env.VITE_SERVER_URL}/auth/update-user`,
         {
-          method: "POST",
+          method: "PUT",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
@@ -53,10 +53,7 @@ export default function AdminPanel() {
           body: JSON.stringify({
             email: editingUser,
             role: formData.role,
-            skills: formData.skills
-              .split(",")
-              .map((skill) => skill.trim())
-              .filter(Boolean),
+            skills: formData.skills, 
           }),
         }
       );
@@ -107,14 +104,11 @@ export default function AdminPanel() {
           
           <p>
             <strong>Skills:</strong>{" "}
-            {(() => {
-              const skillsArray = Array.isArray(user.skills)
+            {
+              typeof user.skills === 'string' && user.skills.trim().length > 0
                 ? user.skills
-                : typeof user.skills === "string" && user.skills.trim() !== ""
-                ? user.skills.split(",").map((s) => s.trim())
-                : [];
-              return skillsArray.length > 0 ? skillsArray.join(", ") : "N/A";
-            })()}
+                : "N/A"
+            }
           </p>
 
           {editingUser === user.email ? (
