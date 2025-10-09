@@ -99,7 +99,7 @@ export default function Tickets() {
             </p>
           </Link>
         ))}
-        {tickets.length === 0 && <p>No tickets submitted yet.</p>}
+        {tickets.length === 0 && <p>No tickets submitted/assigned yet.</p>}
       </div>
     </div>
   );

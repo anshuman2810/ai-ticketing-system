@@ -11,7 +11,24 @@ const tickerSchema = new mongoose.Schema({
     deadline : {type : Date},
     helpfulNotes : {type : String},
     relatedSkills : {type : [String]},
-    createdAt : {type : Date, default : Date.now()}
+    createdAt : {type : Date, default : Date.now()},
+    replies: [
+        {
+            text: {
+                type: String,
+                required: true,
+            },
+            sentBy: { // Who sent the reply (Moderator/Admin/User)
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'User',
+                required: true,
+            },
+            sentAt: {
+                type: Date,
+                default: Date.now,
+            },
+        },
+    ],
 })
 
 export default mongoose.model("Ticket", tickerSchema)
