@@ -104,11 +104,17 @@ export default function AdminPanel() {
           <p>
             <strong>Current Role:</strong> {user.role}
           </p>
+          
           <p>
             <strong>Skills:</strong>{" "}
-            {user.skills && user.skills.length > 0
-              ? user.skills.join(", ")
-              : "N/A"}
+            {(() => {
+              const skillsArray = Array.isArray(user.skills)
+                ? user.skills
+                : typeof user.skills === "string" && user.skills.trim() !== ""
+                ? user.skills.split(",").map((s) => s.trim())
+                : [];
+              return skillsArray.length > 0 ? skillsArray.join(", ") : "N/A";
+            })()}
           </p>
 
           {editingUser === user.email ? (

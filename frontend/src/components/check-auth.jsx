@@ -7,6 +7,7 @@ function CheckAuth({ children, protectedRoute }) {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
+    console.log("Token:", token);
 
     if (protectedRoute) {
       if (!token) {
