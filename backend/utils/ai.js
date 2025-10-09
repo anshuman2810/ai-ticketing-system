@@ -77,5 +77,3 @@ export const analyzeTicket = async (ticket) => {
 };
 
 export default analyzeTicket;
-
-//1:55:00
