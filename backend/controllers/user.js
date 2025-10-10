@@ -2,6 +2,7 @@ import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 import User from "../models/user.js"
 import {inngest} from "../inngest/client.js"
+import { checkInternetConnection } from "../utils/network.js";
 
 export const signup = async (req,res) => {
     const {email,password,skills = []} = req.body
@@ -9,24 +10,32 @@ export const signup = async (req,res) => {
         const hashedpassword = await bcrypt.hash(password,10)
         const user = await User.create({email, password : hashedpassword, skills})
 
-        await inngest.send ({
-            name : 'user/signup',
-            data : {
-                email
-            }
 
-        });
+        const isConnected = await checkInternetConnection();
+        
+        if (isConnected) {
+
+            await inngest.send ({
+                name : 'user/signup',
+                data : {
+                    email
+                }
+            });
+        } else {
+            console.warn(`[OFFLINE MODE] Skipping user/signup event for ${email}. Email notification was skipped due to no internet connection.`);
+        }
 
         const token = jwt.sign(
             { _id:user._id, role : user.role, },
             process.env.JWT_SECRET
         );
+
         res.json ({user, token})
     } catch (error) {
         if (error.code === 11000) {
             return res.status(400).json({ error: "Signup failed", details: "Email already registered" });
           }
-        res.status(500).json({error: "Signup failed", details : error.message});      
+        res.status(500).json({error: "Signup failed", details : error.message});
     }
 }
 

@@ -4,6 +4,8 @@ import { NonRetriableError } from "inngest";
 import {sendMail} from "../../utils/mailer.js"
 import {analyzeTicket} from "../../utils/ai.js"
 import User from "../../models/user.js";
+import { checkInternetConnection } from "../../utils/network.js"; 
+
 
 export const onTicketCreated = inngest.createFunction(
     { id: "on-ticket-created", retries:2 },
@@ -12,6 +14,8 @@ export const onTicketCreated = inngest.createFunction(
     async ({event,step}) =>{
         try {
             const {ticketId} = event.data;
+            
+
             const ticket = await step.run("fetch-ticket", async() => {
                 const ticketObject = await Ticket.findById(ticketId);
                 if(!ticketObject){
@@ -20,11 +24,15 @@ export const onTicketCreated = inngest.createFunction(
                 return ticketObject;
             })
 
+
             await step.run("update-ticket-status", async() => {
                 await Ticket.findByIdAndUpdate(ticket._id, {status: "TODO"});
             })
 
+
             const aiResponse = await analyzeTicket(ticket)
+            
+
             const relatedSkills =await step.run("ai-processing",async()=>{
                 let skills = []
                 if(aiResponse){
@@ -38,6 +46,7 @@ export const onTicketCreated = inngest.createFunction(
                 }
                 return skills;
             })
+
 
             const moderator = await step.run("assign-moderator", async() => {
                 let user = await User.findOne({
@@ -60,17 +69,25 @@ export const onTicketCreated = inngest.createFunction(
                 })
                 return user;
             });
+            
+
             await step.run("send-email-notification", async() => {
-                if(moderator){
+                
+                const isConnected = await checkInternetConnection(); 
+                
+                if(moderator && isConnected){ 
                     const finalTicket = await Ticket.findById(ticket._id)
                     await sendMail(
                         moderator.email,
                         "New Ticket Assigned",
-                        `A new ticket has been assigned to you. 
-                        Title: ${finalTicket.title}` 
+                        `A new ticket has been assigned to you. Title: ${finalTicket.title}` 
                     )
+                } else if (moderator && !isConnected) {
+                    console.warn(`[OFFLINE MODE] Skipping email notification to ${moderator.email} due to no internet connection.`);
+                } else {
+                    console.log("No moderator found, skipping email notification.");
                 }
-            })
+            });
 
             return {success : true};
         } catch (error) {
