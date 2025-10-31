@@ -1,13 +1,3 @@
-<!-- ✨ Animated Banner -->
-<p align="center">
-  <img src="https://readme-typing-svg.herokuapp.com?font=Orbitron&size=30&color=00F0FF&center=true&vCenter=true&width=800&lines=🚀+AI-Powered+Ticket+Management+System;⚡+MERN+%2B+Gemini+%2B+Inngest+Architecture;🤖+Automated+AI+Triage+%26+Smart+Routing!" alt="Typing SVG" />
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/Stack-MERN-green?style=for-the-badge&logo=mongodb" />
-  <img src="https://img.shields.io/badge/AI-Google%20Gemini-blue?style=for-the-badge&logo=google" />
-  <img src="https://img.shields.io/badge/Event%20Bus-Inngest-purple?style=for-the-badge" />
-</p>
 
 ---
 
