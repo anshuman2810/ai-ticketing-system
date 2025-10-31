@@ -1,2 +1,5 @@
 node_modules
 .env
+evaluation.py
+tickets_sample.xlsx
+tickets_predicted.xlsx
