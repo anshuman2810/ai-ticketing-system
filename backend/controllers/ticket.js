@@ -197,3 +197,53 @@ export const closeTicket = async (req, res) => {
         return res.status(500).json({ message: "Internal server error." });
     }
 };
+
+export const assignTicket = async (req, res) => {
+    try {
+        const { id } = req.params; 
+        const { assignedTo, assignedToEmail } = req.body; 
+        const userRole = req.user.role;
+
+        if (userRole !== "admin") {
+            return res.status(403).json({ message: "Forbidden: Only Admin can reassign tickets." });
+        }
+
+        if (!assignedTo && !assignedToEmail) {
+            return res.status(400).json({ message: "Assigned user ID or email is required." });
+        }
+
+        // ✅ Validate ticket existence
+        const ticket = await Ticket.findById(id);
+        if (!ticket) {
+            return res.status(404).json({ message: "Ticket not found." });
+        }
+
+        // ✅ Import User model dynamically
+        const User = (await import("../models/user.js")).default;
+
+        // ✅ Find user either by ID or by Email
+        const userToAssign = await User.findOne({
+            $or: [
+                assignedTo ? { _id: assignedTo } : null,
+                assignedToEmail ? { email: assignedToEmail } : null
+            ].filter(Boolean) // Removes null entries
+        });
+
+        if (!userToAssign) {
+            return res.status(404).json({ message: "User to assign not found." });
+        }
+
+        // ✅ Update and save ticket
+        ticket.assignedTo = userToAssign._id;
+        await ticket.save();
+
+        return res.status(200).json({
+            message: `Ticket assigned to ${userToAssign.email} successfully.`,
+            ticket
+        });
+
+    } catch (error) {
+        console.error("Error assigning ticket:", error.message);
+        return res.status(500).json({ message: "Internal server error." });
+    }
+};

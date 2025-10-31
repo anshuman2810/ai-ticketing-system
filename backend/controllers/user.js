@@ -98,14 +98,20 @@ export const updateUser = async(req,res) => {
     }
 }
 
-export const getUsers = async(req,res) => {
+export const getUsers = async (req, res) => {
     try {
-        if(req.user.role !== "admin"){
-            return res.status(403).json({error: "Forbidden : You are not authorized to view user details!"});
+
+        if (req.user.role !== "admin") {
+            return res.status(403).json({ error: "Forbidden" });
         }
-        const users = await User.find().select("-password");
-        return res.json(users)
+
+        const { role } = req.query;
+        const filter = role ? { role } : {};
+        const users = await User.find(filter).select("-password");
+
+        return res.json({ users });
     } catch (error) {
-        res.status(500).json({error: "Failed to fetch users", details : error.message});
+        console.error("❌ getUsers error:", error.message);
+        res.status(500).json({ error: "Failed to fetch users" });
     }
-}
+};

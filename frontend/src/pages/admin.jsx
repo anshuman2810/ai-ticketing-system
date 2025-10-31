@@ -20,18 +20,24 @@ export default function AdminPanel() {
           Authorization: `Bearer ${token}`,
         },
       });
+  
       const data = await res.json();
-      if (res.ok) {
-        setUsers(data);
-        setFilteredUsers(data);
-      } else {
-        console.error(data.error);
+  
+      if (!res.ok) {
+        console.error("Error fetching users:", data.error || "Unknown error");
+        return;
       }
+  
+      // ✅ Backend sends { users: [...] }
+      const userList = data.users || [];
+  
+      setUsers(userList);
+      setFilteredUsers(userList);
     } catch (err) {
-      console.error("Error fetching users", err);
+      console.error("Error fetching users:", err.message);
     }
   };
-
+  
   const handleEditClick = (user) => {
     setEditingUser(user.email);
     setFormData({
